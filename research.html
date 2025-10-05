@@ -350,3 +350,27 @@
     </script>
 </body>
 </html>
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    // Get all filter buttons
+    const filterButtons = document.querySelectorAll(".filter-btn");
+    // Get all research cards
+    const cards = document.querySelectorAll(".research-card");
+
+    filterButtons.forEach(btn => {
+        btn.addEventListener("click", function() {
+            const filter = btn.getAttribute("data-filter");
+            cards.forEach(card => {
+                if (filter === "all" || card.classList.contains(filter)) {
+                    card.style.display = "block";
+                } else {
+                    card.style.display = "none";
+                }
+            });
+            // Update button styles
+            filterButtons.forEach(b => b.classList.remove("bg-primary", "text-white"));
+            btn.classList.add("bg-primary", "text-white");
+        });
+    });
+});
+</script>
