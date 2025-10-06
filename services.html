@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Services - MayarDataScience Lab</title>
+    <title>Services - MayarData Lab</title>
     <link rel="icon" type="image/x-icon" href="/static/favicon.ico">
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -11,8 +11,8 @@
             theme: {
                 extend: {
                     colors: {
-                        primary: '#3B82F6',
-                        secondary: '#10B981',
+                        primary: '#8B5CF6',
+                        secondary: '#06D6A0',
                         dark: '#1E293B',
                         light: '#F8FAFC',
                     }
@@ -26,6 +26,30 @@
         body {
             font-family: 'Space Grotesk', sans-serif;
         }
+        .file-input-wrapper {
+            position: relative;
+            overflow: hidden;
+            display: inline-block;
+            cursor: pointer;
+        }
+        .file-input-wrapper input[type=file] {
+            position: absolute;
+            left: 0;
+            top: 0;
+            opacity: 0;
+            cursor: pointer;
+        }
+        .service-card {
+            transition: all 0.3s ease;
+        }
+        .service-card:hover {
+            transform: translateY(-5px);
+        }
+        .gradient-text {
+            background: linear-gradient(135deg, #8B5CF6, #06D6A0);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
     </style>
 </head>
 <body class="bg-light text-dark">
@@ -34,7 +58,7 @@
         <div class="max-w-7xl mx-auto flex justify-between items-center">
             <div class="flex items-center space-x-4">
                 <a href="#" class="hover:text-primary transition"><i data-feather="phone" class="w-4 h-4 mr-1"></i> +1 (234) 567-890</a>
-                <a href="mailto:info@MayarDataSciencelab.com" class="hover:text-primary transition"><i data-feather="mail" class="w-4 h-4 mr-1"></i> info@MayarDataSciencelab.com</a>
+                <a href="mailto:info@mayardatalab.com" class="hover:text-primary transition"><i data-feather="mail" class="w-4 h-4 mr-1"></i> info@mayardatalab.com</a>
             </div>
             <div class="flex items-center space-x-4">
                 <a href="#" class="hover:text-primary transition"><i data-feather="twitter" class="w-4 h-4"></i></a>
@@ -52,9 +76,9 @@
                     <div class="flex-shrink-0 flex items-center">
                         <a href="index.html" class="flex items-center">
                             <div class="h-8 w-8 rounded-full bg-primary flex items-center justify-center">
-                                <i data-feather="Mayar" class="text-white"></i>
+                                <i data-feather="database" class="text-white"></i>
                             </div>
-                            <span class="ml-2 text-xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">MayarDataScience Lab</span>
+                            <span class="ml-2 text-xl font-bold gradient-text">MayarData Lab</span>
                         </a>
                     </div>
                 </div>
@@ -81,13 +105,13 @@
             <div class="text-center">
                 <h1 class="text-4xl font-extrabold tracking-tight sm:text-5xl">Our Services</h1>
                 <p class="mt-4 max-w-2xl text-xl text-gray-500 mx-auto">
-                    Comprehensive data science solutions tailored to your needs
+                    Advanced data science solutions tailored to transform your business
                 </p>
             </div>
 
             <div class="mt-16 grid gap-8 md:grid-cols-2 lg:grid-cols-3">
                 <!-- Service 1 -->
-                <div class="bg-white p-8 rounded-xl shadow-md hover:shadow-lg transition">
+                <div class="service-card bg-white p-8 rounded-xl shadow-md hover:shadow-xl transition flex flex-col">
                     <div class="h-16 w-16 rounded-full bg-primary/10 flex items-center justify-center">
                         <i data-feather="cpu" class="text-primary h-8 w-8"></i>
                     </div>
@@ -95,13 +119,22 @@
                     <p class="mt-4 text-gray-500">
                         Predictive modeling, deep learning, and AI solutions to drive your business forward.
                     </p>
-                    <a href="machine-learning.html" class="mt-4 inline-flex items-center text-primary hover:text-primary/80 transition">
-                        Learn more <i data-feather="arrow-right" class="ml-1 w-4 h-4"></i>
-                    </a>
+                    <div class="mt-4 flex items-center">
+                        <span class="text-2xl font-bold text-primary">$5,000</span>
+                        <span class="ml-2 text-gray-500">/project</span>
+                    </div>
+                    <div class="mt-6 space-y-3">
+                        <a href="machine-learning.html" class="w-full inline-flex items-center justify-center text-primary hover:text-primary/80 transition border border-primary rounded-md py-2 px-4">
+                            Learn more <i data-feather="arrow-right" class="ml-1 w-4 h-4"></i>
+                        </a>
+                        <button onclick="openRequestModal('Machine Learning')" class="w-full bg-primary text-white rounded-md py-2 px-4 hover:bg-primary/80 transition flex items-center justify-center">
+                            <i data-feather="upload" class="w-4 h-4 mr-2"></i> Request Service
+                        </button>
+                    </div>
                 </div>
 
                 <!-- Service 2 -->
-                <div class="bg-white p-8 rounded-xl shadow-md hover:shadow-lg transition">
+                <div class="service-card bg-white p-8 rounded-xl shadow-md hover:shadow-xl transition flex flex-col">
                     <div class="h-16 w-16 rounded-full bg-secondary/10 flex items-center justify-center">
                         <i data-feather="activity" class="text-secondary h-8 w-8"></i>
                     </div>
@@ -109,13 +142,22 @@
                     <p class="mt-4 text-gray-500">
                         Extract actionable insights from your data with our advanced analytics solutions.
                     </p>
-                    <a href="data-analytics.html" class="mt-4 inline-flex items-center text-secondary hover:text-secondary/80 transition">
-                        Learn more <i data-feather="arrow-right" class="ml-1 w-4 h-4"></i>
-                    </a>
+                    <div class="mt-4 flex items-center">
+                        <span class="text-2xl font-bold text-secondary">$2,500</span>
+                        <span class="ml-2 text-gray-500">/project</span>
+                    </div>
+                    <div class="mt-6 space-y-3">
+                        <a href="data-analytics.html" class="w-full inline-flex items-center justify-center text-secondary hover:text-secondary/80 transition border border-secondary rounded-md py-2 px-4">
+                            Learn more <i data-feather="arrow-right" class="ml-1 w-4 h-4"></i>
+                        </a>
+                        <button onclick="openRequestModal('Data Analytics')" class="w-full bg-secondary text-white rounded-md py-2 px-4 hover:bg-secondary/80 transition flex items-center justify-center">
+                            <i data-feather="upload" class="w-4 h-4 mr-2"></i> Request Service
+                        </button>
+                    </div>
                 </div>
 
                 <!-- Service 3 -->
-                <div class="bg-white p-8 rounded-xl shadow-md hover:shadow-lg transition">
+                <div class="service-card bg-white p-8 rounded-xl shadow-md hover:shadow-xl transition flex flex-col">
                     <div class="h-16 w-16 rounded-full bg-primary/10 flex items-center justify-center">
                         <i data-feather="eye" class="text-primary h-8 w-8"></i>
                     </div>
@@ -123,13 +165,22 @@
                     <p class="mt-4 text-gray-500">
                         Transform complex data into intuitive, interactive visualizations and dashboards.
                     </p>
-                    <a href="visualization.html" class="mt-4 inline-flex items-center text-primary hover:text-primary/80 transition">
-                        Learn more <i data-feather="arrow-right" class="ml-1 w-4 h-4"></i>
-                    </a>
+                    <div class="mt-4 flex items-center">
+                        <span class="text-2xl font-bold text-primary">$3,500</span>
+                        <span class="ml-2 text-gray-500">/project</span>
+                    </div>
+                    <div class="mt-6 space-y-3">
+                        <a href="visualization.html" class="w-full inline-flex items-center justify-center text-primary hover:text-primary/80 transition border border-primary rounded-md py-2 px-4">
+                            Learn more <i data-feather="arrow-right" class="ml-1 w-4 h-4"></i>
+                        </a>
+                        <button onclick="openRequestModal('Data Visualization')" class="w-full bg-primary text-white rounded-md py-2 px-4 hover:bg-primary/80 transition flex items-center justify-center">
+                            <i data-feather="upload" class="w-4 h-4 mr-2"></i> Request Service
+                        </button>
+                    </div>
                 </div>
 
                 <!-- Service 4 -->
-                <div class="bg-white p-8 rounded-xl shadow-md hover:shadow-lg transition">
+                <div class="service-card bg-white p-8 rounded-xl shadow-md hover:shadow-xl transition flex flex-col">
                     <div class="h-16 w-16 rounded-full bg-secondary/10 flex items-center justify-center">
                         <i data-feather="database" class="text-secondary h-8 w-8"></i>
                     </div>
@@ -137,13 +188,22 @@
                     <p class="mt-4 text-gray-500">
                         Robust data pipelines and infrastructure to support your analytics needs.
                     </p>
-                    <a href="#" class="mt-4 inline-flex items-center text-secondary hover:text-secondary/80 transition">
-                        Learn more <i data-feather="arrow-right" class="ml-1 w-4 h-4"></i>
-                    </a>
+                    <div class="mt-4 flex items-center">
+                        <span class="text-2xl font-bold text-secondary">$4,500</span>
+                        <span class="ml-2 text-gray-500">/project</span>
+                    </div>
+                    <div class="mt-6 space-y-3">
+                        <a href="#" class="w-full inline-flex items-center justify-center text-secondary hover:text-secondary/80 transition border border-secondary rounded-md py-2 px-4">
+                            Learn more <i data-feather="arrow-right" class="ml-1 w-4 h-4"></i>
+                        </a>
+                        <button onclick="openRequestModal('Data Engineering')" class="w-full bg-secondary text-white rounded-md py-2 px-4 hover:bg-secondary/80 transition flex items-center justify-center">
+                            <i data-feather="upload" class="w-4 h-4 mr-2"></i> Request Service
+                        </button>
+                    </div>
                 </div>
 
                 <!-- Service 5 -->
-                <div class="bg-white p-8 rounded-xl shadow-md hover:shadow-lg transition">
+                <div class="service-card bg-white p-8 rounded-xl shadow-md hover:shadow-xl transition flex flex-col">
                     <div class="h-16 w-16 rounded-full bg-primary/10 flex items-center justify-center">
                         <i data-feather="trending-up" class="text-primary h-8 w-8"></i>
                     </div>
@@ -151,13 +211,22 @@
                     <p class="mt-4 text-gray-500">
                         Advanced statistical methods to validate your hypotheses and findings.
                     </p>
-                    <a href="statistical-methods.html" class="mt-4 inline-flex items-center text-primary hover:text-primary/80 transition">
-                        Learn more <i data-feather="arrow-right" class="ml-1 w-4 h-4"></i>
-                    </a>
+                    <div class="mt-4 flex items-center">
+                        <span class="text-2xl font-bold text-primary">$2,000</span>
+                        <span class="ml-2 text-gray-500">/project</span>
+                    </div>
+                    <div class="mt-6 space-y-3">
+                        <a href="statistical-methods.html" class="w-full inline-flex items-center justify-center text-primary hover:text-primary/80 transition border border-primary rounded-md py-2 px-4">
+                            Learn more <i data-feather="arrow-right" class="ml-1 w-4 h-4"></i>
+                        </a>
+                        <button onclick="openRequestModal('Statistical Analysis')" class="w-full bg-primary text-white rounded-md py-2 px-4 hover:bg-primary/80 transition flex items-center justify-center">
+                            <i data-feather="upload" class="w-4 h-4 mr-2"></i> Request Service
+                        </button>
+                    </div>
                 </div>
 
                 <!-- Service 6 -->
-                <div class="bg-white p-8 rounded-xl shadow-md hover:shadow-lg transition">
+                <div class="service-card bg-white p-8 rounded-xl shadow-md hover:shadow-xl transition flex flex-col">
                     <div class="h-16 w-16 rounded-full bg-secondary/10 flex items-center justify-center">
                         <i data-feather="cloud" class="text-secondary h-8 w-8"></i>
                     </div>
@@ -165,11 +234,73 @@
                     <p class="mt-4 text-gray-500">
                         Scalable cloud-based data solutions for your growing business needs.
                     </p>
-                    <a href="#" class="mt-4 inline-flex items-center text-secondary hover:text-secondary/80 transition">
-                        Learn more <i data-feather="arrow-right" class="ml-1 w-4 h-4"></i>
-                    </a>
+                    <div class="mt-4 flex items-center">
+                        <span class="text-2xl font-bold text-secondary">$6,000</span>
+                        <span class="ml-2 text-gray-500">/project</span>
+                    </div>
+                    <div class="mt-6 space-y-3">
+                        <a href="#" class="w-full inline-flex items-center justify-center text-secondary hover:text-secondary/80 transition border border-secondary rounded-md py-2 px-4">
+                            Learn more <i data-feather="arrow-right" class="ml-1 w-4 h-4"></i>
+                        </a>
+                        <button onclick="openRequestModal('Cloud Solutions')" class="w-full bg-secondary text-white rounded-md py-2 px-4 hover:bg-secondary/80 transition flex items-center justify-center">
+                            <i data-feather="upload" class="w-4 h-4 mr-2"></i> Request Service
+                        </button>
+                    </div>
                 </div>
             </div>
+        </div>
+    </div>
+
+    <!-- Request Service Modal -->
+    <div id="requestModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto">
+            <div class="p-6 border-b border-gray-200">
+                <div class="flex justify-between items-center">
+                    <h3 class="text-xl font-bold">Request Service</h3>
+                    <button onclick="closeRequestModal()" class="text-gray-500 hover:text-gray-700">
+                        <i data-feather="x"></i>
+                    </button>
+                </div>
+            </div>
+            <form id="requestForm" class="p-6 space-y-4">
+                <input type="hidden" id="serviceName" name="service" value="">
+                <div>
+                    <label for="name" class="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
+                    <input type="text" id="name" name="name" required class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-primary focus:border-primary">
+                </div>
+                <div>
+                    <label for="email" class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                    <input type="email" id="email" name="email" required class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-primary focus:border-primary">
+                </div>
+                <div>
+                    <label for="company" class="block text-sm font-medium text-gray-700 mb-1">Company</label>
+                    <input type="text" id="company" name="company" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-primary focus:border-primary">
+                </div>
+                <div>
+                    <label for="serviceDisplay" class="block text-sm font-medium text-gray-700 mb-1">Service</label>
+                    <input type="text" id="serviceDisplay" disabled class="w-full px-4 py-2 border border-gray-300 rounded-md bg-gray-100">
+                </div>
+                <div>
+                    <label for="message" class="block text-sm font-medium text-gray-700 mb-1">Project Details</label>
+                    <textarea id="message" name="message" rows="4" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-primary focus:border-primary" placeholder="Please describe your project requirements..."></textarea>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Upload Data File</label>
+                    <div class="file-input-wrapper w-full">
+                        <input type="file" id="file" name="file" class="w-full">
+                        <div class="w-full px-4 py-2 border border-gray-300 rounded-md bg-white flex items-center justify-between cursor-pointer">
+                            <span id="file-name" class="text-gray-500">No file selected</span>
+                            <i data-feather="upload" class="text-gray-500"></i>
+                        </div>
+                    </div>
+                    <p class="mt-1 text-xs text-gray-500">Supported formats: CSV, JSON, Excel, SQL, TXT (Max 50MB)</p>
+                </div>
+                <div class="pt-4">
+                    <button type="submit" class="w-full bg-primary text-white py-3 px-4 rounded-md hover:bg-primary/90 transition font-medium">
+                        Submit Request
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 
@@ -180,12 +311,12 @@
                 <div class="col-span-2">
                     <div class="flex items-center">
                         <div class="h-8 w-8 rounded-full bg-primary flex items-center justify-center">
-                            <i data-feather="Mayar" class="text-white"></i>
+                            <i data-feather="database" class="text-white"></i>
                         </div>
-                        <span class="ml-2 text-xl font-bold">MayarDataScience Lab</span>
+                        <span class="ml-2 text-xl font-bold">MayarData Lab</span>
                     </div>
                     <p class="mt-4 text-gray-300">
-                        Advancing data science through innovative research, analytics, and collaboration.
+                        Transforming businesses through innovative data science, analytics, and AI solutions.
                     </p>
                     <div class="mt-6 flex space-x-6">
                         <a href="#" class="text-gray-300 hover:text-white transition">
@@ -223,7 +354,7 @@
             </div>
             <div class="mt-12 border-t border-gray-700 pt-8 flex flex-col md:flex-row justify-between">
                 <p class="text-gray-400 text-sm">
-                    © 2023 MayarDataScience Lab. All rights reserved.
+                    © 2023 MayarData Lab. All rights reserved.
                 </p>
                 <div class="mt-4 md:mt-0 flex space-x-6">
                     <a href="#" class="text-gray-400 hover:text-white text-sm transition">Privacy Policy</a>
@@ -236,6 +367,40 @@
 
     <script>
         feather.replace();
+        
+        // Modal functionality
+        function openRequestModal(service) {
+            document.getElementById('serviceName').value = service;
+            document.getElementById('serviceDisplay').value = service;
+            document.getElementById('requestModal').classList.remove('hidden');
+        }
+        
+        function closeRequestModal() {
+            document.getElementById('requestModal').classList.add('hidden');
+            document.getElementById('requestForm').reset();
+            document.getElementById('file-name').textContent = 'No file selected';
+        }
+        
+        // File input functionality
+        document.getElementById('file').addEventListener('change', function(e) {
+            const fileName = e.target.files.length > 0 ? e.target.files[0].name : 'No file selected';
+            document.getElementById('file-name').textContent = fileName;
+        });
+        
+        // Form submission
+        document.getElementById('requestForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            // In a real application, you would send the form data to a server here
+            alert('Thank you for your service request! We will get back to you soon.');
+            closeRequestModal();
+        });
+        
+        // Close modal when clicking outside
+        document.getElementById('requestModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeRequestModal();
+            }
+        });
     </script>
 </body>
 </html>
