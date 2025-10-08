@@ -74,6 +74,23 @@
     .share-link-input{width:100%;padding:8px;border:1px solid #e6eef8;border-radius:6px;margin:8px 0;font-family:monospace}
     .share-options{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
     .share-note{font-size:12px;color:var(--muted);margin-top:8px}
+    
+    /* Respondent View Styles */
+    #respondentView {display:none; max-width:800px; margin:0 auto; padding:20px; background:#fff; min-height:100vh;}
+    #respondentView .welcome-page {text-align:center; padding:40px 20px;}
+    #respondentView .welcome-page h1 {font-size:28px; margin-bottom:16px; color:#1e293b;}
+    #respondentView .welcome-page .description {font-size:16px; line-height:1.6; color:#475569; margin-bottom:30px; white-space:pre-line; text-align:left; background:#f8fafc; padding:20px; border-radius:8px;}
+    #respondentView .welcome-page .meta-info {background:#f1f5f9; padding:16px; border-radius:8px; margin:20px 0; text-align:left;}
+    #respondentView .welcome-page .meta-item {margin-bottom:8px; font-size:14px;}
+    #respondentView .welcome-page .btn {margin-top:20px; padding:12px 24px; font-size:16px;}
+    #respondentView .form-page {display:none;}
+    #respondentView .thankyou-page {display:none; text-align:center; padding:60px 20px;}
+    #respondentView .thankyou-page h2 {font-size:24px; margin-bottom:16px; color:#1e293b;}
+    #respondentView .thankyou-page p {font-size:16px; color:#475569; margin-bottom:24px;}
+    #respondentView .progress-bar {height:6px; background:#e2e8f0; border-radius:3px; margin:20px 0; overflow:hidden;}
+    #respondentView .progress {height:100%; background:var(--accent); width:0%; transition:width 0.3s;}
+    #respondentView .question-counter {font-size:14px; color:var(--muted); margin-bottom:10px;}
+    
     @media (max-width:900px){.wrap{flex-direction:column}.preview{order:2}.builder{order:1}}
   </style>
 </head>
@@ -134,6 +151,41 @@
           <button class="btn" id="clearResponses">Clear Responses</button>
         </div>
       </div>
+    </div>
+  </div>
+
+  <!-- Respondent View (shown when accessed via shared link) -->
+  <div id="respondentView">
+    <div class="welcome-page" id="welcomePage">
+      <h1 id="respondentTitle">Questionnaire Title</h1>
+      <div class="description" id="respondentDescription">
+        This is where the questionnaire description would appear.
+      </div>
+      <div class="meta-info">
+        <div class="meta-item"><strong>Number of questions:</strong> <span id="questionCount">0</span></div>
+        <div class="meta-item"><strong>Estimated time:</strong> <span id="estimatedTime">2-3 minutes</span></div>
+        <div class="meta-item"><strong>All responses are anonymous</strong></div>
+      </div>
+      <button class="btn primary" id="startQuestionnaire">Start Questionnaire</button>
+    </div>
+    
+    <div class="form-page" id="formPage">
+      <div class="progress-bar">
+        <div class="progress" id="progressBar"></div>
+      </div>
+      <div class="question-counter" id="questionCounter">Question 1 of 10</div>
+      <div id="respondentQuestions"></div>
+      <div style="margin-top:20px; display:flex; justify-content:space-between;">
+        <button class="btn" id="prevQuestion" style="display:none;">Previous</button>
+        <button class="btn primary" id="nextQuestion">Next</button>
+        <button class="btn success" id="submitQuestionnaire" style="display:none;">Submit</button>
+      </div>
+    </div>
+    
+    <div class="thankyou-page" id="thankYouPage">
+      <h2>Thank You!</h2>
+      <p>Your response has been recorded. We appreciate your time and feedback.</p>
+      <button class="btn" id="backToStart">Submit Another Response</button>
     </div>
   </div>
 
@@ -227,6 +279,10 @@
     
     // Store responses for analysis
     let responses = [];
+    
+    // Respondent view state
+    let currentQuestionIndex = 0;
+    let respondentAnswers = {};
     
     const statusEl = document.getElementById('status');
 
@@ -1154,6 +1210,209 @@
       window.open(`https://wa.me/?text=${text}`);
     }
 
+    // RESPONDENT VIEW FUNCTIONS
+    function renderRespondentView() {
+      // Hide builder interface
+      document.querySelector('header').style.display = 'none';
+      document.querySelector('.wrap').style.display = 'none';
+      document.querySelector('footer').style.display = 'none';
+      
+      // Show respondent view
+      document.getElementById('respondentView').style.display = 'block';
+      
+      // Render welcome page
+      document.getElementById('respondentTitle').textContent = form.title;
+      document.getElementById('respondentDescription').textContent = form.description;
+      document.getElementById('questionCount').textContent = form.questions.length;
+      
+      // Calculate estimated time (approx 15 seconds per question)
+      const estimatedMinutes = Math.ceil(form.questions.length * 15 / 60);
+      document.getElementById('estimatedTime').textContent = `${estimatedMinutes} minute${estimatedMinutes !== 1 ? 's' : ''}`;
+      
+      // Reset respondent state
+      currentQuestionIndex = 0;
+      respondentAnswers = {};
+      
+      // Show welcome page
+      document.getElementById('welcomePage').style.display = 'block';
+      document.getElementById('formPage').style.display = 'none';
+      document.getElementById('thankYouPage').style.display = 'none';
+    }
+    
+    function startQuestionnaire() {
+      document.getElementById('welcomePage').style.display = 'none';
+      document.getElementById('formPage').style.display = 'block';
+      renderCurrentQuestion();
+    }
+    
+    function renderCurrentQuestion() {
+      const container = document.getElementById('respondentQuestions');
+      container.innerHTML = '';
+      
+      if (currentQuestionIndex >= form.questions.length) {
+        showThankYouPage();
+        return;
+      }
+      
+      const q = form.questions[currentQuestionIndex];
+      const qdiv = document.createElement('div');
+      qdiv.className = 'form-q';
+      
+      let requiredMark = q.required ? ' *' : '';
+      let html = `<div style="font-weight:600; margin-bottom:12px; font-size:18px;">${escapeHtml(q.title)}${requiredMark}</div>`;
+      
+      // Render input by type
+      if(q.type === 'short'){
+        html += `<input class="input" placeholder="${escapeAttr(q.placeholder||'')}" id="answer-${q.id}" />`;
+      } else if(q.type === 'paragraph'){
+        html += `<textarea class="input" placeholder="${escapeAttr(q.placeholder||'')}" id="answer-${q.id}" rows="4"></textarea>`;
+      } else if(q.type === 'radio'){
+        html += '<div style="margin-top:8px">';
+        q.options.forEach((opt, i) => { 
+          html += `<label class="small" style="display:block;margin-bottom:8px; padding:8px; border-radius:6px; border:1px solid #e6eef8;">
+                    <input type="radio" name="${q.id}" value="${escapeAttr(opt)}" style="margin-right:8px;" /> 
+                    ${escapeHtml(opt)}
+                   </label>`; 
+        });
+        html += '</div>';
+      } else if(q.type === 'checkboxes'){
+        html += '<div style="margin-top:8px">';
+        q.options.forEach((opt, i) => { 
+          html += `<label class="small" style="display:block;margin-bottom:8px; padding:8px; border-radius:6px; border:1px solid #e6eef8;">
+                    <input type="checkbox" name="${q.id}" value="${escapeAttr(opt)}" style="margin-right:8px;" /> 
+                    ${escapeHtml(opt)}
+                   </label>`; 
+        });
+        html += '</div>';
+      } else if(q.type === 'dropdown'){
+        html += '<select class="select" id="answer-'+q.id+'"><option value="">Select an option</option>';
+        q.options.forEach(opt => { html += `<option value="${escapeAttr(opt)}">${escapeHtml(opt)}</option>`; });
+        html += '</select>';
+      } else if(q.type === 'scale'){
+        const min = q.options[0]||1; 
+        const max = q.options[1]||5;
+        html += `<div class="small" style="margin-bottom:12px;">Please select a value between ${min} and ${max}</div>
+                 <div style="display:flex;gap:12px;margin-top:6px; justify-content:center;">`;
+        for(let i=+min; i<=+max; i++){ 
+          html += `<label style="display:flex; flex-direction:column; align-items:center;">
+                    <input type="radio" name="${q.id}" value="${i}" style="margin-bottom:4px;" /> 
+                    <span>${i}</span>
+                   </label>`; 
+        }
+        html += '</div>';
+      } else if(q.type === 'date'){
+        html += `<input type="date" class="input" id="answer-${q.id}"/>`;
+      } else if(q.type === 'time'){
+        html += `<input type="time" class="input" id="answer-${q.id}"/>`;
+      } else {
+        html += `<div class="small">Unsupported question type</div>`;
+      }
+      
+      qdiv.innerHTML = html;
+      container.appendChild(qdiv);
+      
+      // Update progress
+      const progress = ((currentQuestionIndex + 1) / form.questions.length) * 100;
+      document.getElementById('progressBar').style.width = `${progress}%`;
+      document.getElementById('questionCounter').textContent = `Question ${currentQuestionIndex + 1} of ${form.questions.length}`;
+      
+      // Update navigation buttons
+      document.getElementById('prevQuestion').style.display = currentQuestionIndex > 0 ? 'inline-flex' : 'none';
+      document.getElementById('nextQuestion').style.display = currentQuestionIndex < form.questions.length - 1 ? 'inline-flex' : 'none';
+      document.getElementById('submitQuestionnaire').style.display = currentQuestionIndex === form.questions.length - 1 ? 'inline-flex' : 'none';
+      
+      // Load previous answer if exists
+      if (respondentAnswers[q.id]) {
+        if (q.type === 'radio' || q.type === 'scale') {
+          const radio = document.querySelector(`input[name="${q.id}"][value="${respondentAnswers[q.id]}"]`);
+          if (radio) radio.checked = true;
+        } else if (q.type === 'checkboxes') {
+          respondentAnswers[q.id].forEach(value => {
+            const checkbox = document.querySelector(`input[name="${q.id}"][value="${value}"]`);
+            if (checkbox) checkbox.checked = true;
+          });
+        } else {
+          const input = document.getElementById(`answer-${q.id}`);
+          if (input) input.value = respondentAnswers[q.id];
+        }
+      }
+    }
+    
+    function saveCurrentAnswer() {
+      if (currentQuestionIndex >= form.questions.length) return;
+      
+      const q = form.questions[currentQuestionIndex];
+      let answer = null;
+      
+      if (q.type === 'radio' || q.type === 'scale') {
+        const selected = document.querySelector(`input[name="${q.id}"]:checked`);
+        answer = selected ? selected.value : null;
+      } else if (q.type === 'checkboxes') {
+        const selected = Array.from(document.querySelectorAll(`input[name="${q.id}"]:checked`));
+        answer = selected.map(input => input.value);
+      } else {
+        const input = document.getElementById(`answer-${q.id}`);
+        answer = input ? input.value : null;
+      }
+      
+      if (answer) {
+        respondentAnswers[q.id] = answer;
+      } else if (respondentAnswers[q.id]) {
+        delete respondentAnswers[q.id];
+      }
+    }
+    
+    function nextQuestion() {
+      saveCurrentAnswer();
+      currentQuestionIndex++;
+      renderCurrentQuestion();
+    }
+    
+    function prevQuestion() {
+      saveCurrentAnswer();
+      currentQuestionIndex--;
+      renderCurrentQuestion();
+    }
+    
+    function submitQuestionnaire() {
+      saveCurrentAnswer();
+      
+      // Validate required questions
+      const missingRequired = form.questions.filter(q => 
+        q.required && (!respondentAnswers[q.id] || 
+          (Array.isArray(respondentAnswers[q.id]) && respondentAnswers[q.id].length === 0))
+      );
+      
+      if (missingRequired.length > 0) {
+        alert(`Please answer the following required questions: ${missingRequired.map(q => q.title).join(', ')}`);
+        currentQuestionIndex = form.questions.findIndex(q => q.id === missingRequired[0].id);
+        renderCurrentQuestion();
+        return;
+      }
+      
+      // Create response object
+      const response = {
+        timestamp: new Date().toISOString(),
+        ...respondentAnswers
+      };
+      
+      // Add to responses
+      responses.push(response);
+      localStorage.setItem('researcherFormResponses', JSON.stringify(responses));
+      
+      showThankYouPage();
+    }
+    
+    function showThankYouPage() {
+      document.getElementById('formPage').style.display = 'none';
+      document.getElementById('thankYouPage').style.display = 'block';
+    }
+    
+    function backToStart() {
+      document.getElementById('thankYouPage').style.display = 'none';
+      document.getElementById('welcomePage').style.display = 'block';
+    }
+
     // Load form from URL parameter on page load
     function loadFormFromURL() {
       const urlParams = new URLSearchParams(window.location.search);
@@ -1167,22 +1426,20 @@
           
           if (formData && formData.questions) {
             form = formData;
-            renderBuilder();
-            renderPreview();
-            markUnsaved();
+            
+            // Show respondent view instead of builder
+            renderRespondentView();
             
             // Update page title to reflect the loaded form
-            document.title = `${form.title} - Questionnaire Builder`;
+            document.title = `${form.title} - Questionnaire`;
             
-            // Show a message that the form was loaded from a shared link
-            setTimeout(() => {
-              alert('Questionnaire loaded from shared link. You can now fill it out or make changes.');
-            }, 500);
+            return true;
           }
         } catch (e) {
           console.error('Error loading form from URL:', e);
         }
       }
+      return false;
     }
 
     // Title binding
@@ -1191,18 +1448,28 @@
     // Initialization
     (function init(){
       // First try to load from URL (shared form)
-      loadFormFromURL();
+      const isRespondentView = loadFormFromURL();
       
-      // If no form in URL, try loading from localStorage
-      if (form.questions.length === 0 && !loadFromLocal()){
-        // initial sample question
-        form.questions = [
-          {id:uid(), type:'short', title:'Your name', required:true, placeholder:'Full name'},
-          {id:uid(), type:'radio', title:'Have you used our service before?', required:true, options:['Yes','No']},
-        ];
+      if (!isRespondentView) {
+        // If no form in URL, try loading from localStorage
+        if (!loadFromLocal()){
+          // initial sample question
+          form.questions = [
+            {id:uid(), type:'short', title:'Your name', required:true, placeholder:'Full name'},
+            {id:uid(), type:'radio', title:'Have you used our service before?', required:true, options:['Yes','No']},
+          ];
+        }
+        renderBuilder(); 
+        renderPreview();
+        markSaved();
       }
-      renderBuilder(); renderPreview();
-      markSaved();
+      
+      // Set up respondent view event handlers
+      document.getElementById('startQuestionnaire').onclick = startQuestionnaire;
+      document.getElementById('nextQuestion').onclick = nextQuestion;
+      document.getElementById('prevQuestion').onclick = prevQuestion;
+      document.getElementById('submitQuestionnaire').onclick = submitQuestionnaire;
+      document.getElementById('backToStart').onclick = backToStart;
     })();
   </script>
 </body>
