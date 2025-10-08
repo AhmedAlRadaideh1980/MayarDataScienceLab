@@ -1,0 +1,1209 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Questionnaire Builder — Researcher Form Designer</title>
+  <style>
+    :root{
+      --bg:#f6f8fb; --card:#fff; --muted:#6b7280; --accent:#2563eb;
+      --danger:#ef4444; --soft:#eef2ff; --success:#10b981;
+    }
+    *{box-sizing:border-box;font-family:Inter,ui-sans-serif,system-ui,Arial;}
+    body{margin:0;background:var(--bg);color:#0f172a}
+    header{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;background:linear-gradient(90deg,#fff 0%,#f8fafc 100%);border-bottom:1px solid #e6eef8}
+    header h1{font-size:18px;margin:0}
+    header .controls{display:flex;gap:8px;align-items:center}
+    .wrap{display:flex;gap:18px;padding:18px;max-width:1200px;margin:18px auto}
+    .panel{background:var(--card);flex:1;padding:14px;border-radius:8px;box-shadow:0 1px 3px rgba(15,23,42,0.06)}
+    .builder{flex:1.1;min-width:360px}
+    .preview{flex:1;min-width:300px;background:linear-gradient(180deg,#fff 0%,#fcfdff 100%)}
+    .toolbox{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+    .btn{display:inline-flex;align-items:center;gap:8px;padding:8px 10px;border-radius:8px;border:1px solid #e6eef8;background:#fff;cursor:pointer;font-size:13px}
+    .btn.primary{background:var(--accent);color:#fff;border-color:transparent}
+    .btn.success{background:var(--success);color:#fff;border-color:transparent}
+    .btn.ghost{background:transparent;border:1px dashed #dbeafe}
+    .btn.danger{background:var(--danger);color:#fff;border-color:transparent}
+    .question{border:1px solid #e6eef8;padding:12px;border-radius:8px;margin-bottom:10px;background:linear-gradient(180deg,#ffffff,#fbfdff)}
+    .q-header{display:flex;justify-content:space-between;gap:12px;align-items:center}
+    .q-title{flex:1}
+    .q-title input{width:100%;border:0;font-size:15px;padding:6px 4px;background:transparent}
+    .q-meta{display:flex;gap:6px;align-items:center}
+    .small{font-size:12px;color:var(--muted)}
+    .options{margin-top:8px}
+    .option{display:flex;gap:8px;align-items:center;margin-bottom:6px}
+    .option input[type="text"]{flex:1;padding:6px;border:1px solid #eef2ff;border-radius:6px}
+    .required-toggle{display:flex;gap:6px;align-items:center}
+    select, input[type="number"]{padding:6px;border-radius:6px;border:1px solid #eef2ff}
+    .reorder{display:flex;gap:6px}
+    .preview-inner{padding:16px}
+    .form-title{font-size:18px;margin:0 0 8px 0}
+    .form-desc{color:var(--muted);font-size:13px;margin:0 0 16px 0}
+    .form-q{padding:12px 0;border-bottom:1px dashed #f1f5f9}
+    .form-q:last-child{border-bottom:0}
+    .input, textarea, .select, .checkbox {width:100%;padding:8px;border-radius:6px;border:1px solid #e6eef8;background:#fff}
+    textarea{min-height:80px}
+    footer{padding:12px 18px;display:flex;justify-content:space-between;gap:8px;align-items:center;color:var(--muted);font-size:13px}
+    .tools-row{display:flex;gap:8px;flex-wrap:wrap}
+    .inline{display:inline-flex;align-items:center;gap:8px}
+    .secondary{background:#f8fafc;border:1px solid #e6eef8;color:#111;padding:6px 8px;border-radius:6px}
+    .muted{color:var(--muted)}
+    .pill{font-size:12px;padding:6px 8px;background:var(--soft);border-radius:999px;color:var(--accent)}
+    .flex-col{display:flex;flex-direction:column}
+    .checkbox label{display:flex;align-items:center;gap:8px}
+    .file-actions{display:flex;gap:8px}
+    .help{font-size:12px;color:var(--muted);margin-top:8px}
+    .modal{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:1000;align-items:center;justify-content:center}
+    .modal-content{background:#fff;border-radius:8px;padding:20px;max-width:800px;width:90%;max-height:90vh;overflow:auto}
+    .modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
+    .modal-title{font-size:18px;font-weight:600}
+    .close-modal{background:none;border:none;font-size:24px;cursor:pointer}
+    .stats-section{margin-bottom:20px}
+    .stats-table{width:100%;border-collapse:collapse;margin-top:10px}
+    .stats-table th, .stats-table td{padding:8px;text-align:left;border-bottom:1px solid #e6eef8}
+    .stats-table th{background:var(--soft);font-weight:600}
+    .chart-container{margin:15px 0;padding:10px;border:1px solid #e6eef8;border-radius:6px}
+    .chart-bar{height:20px;background:var(--accent);margin:5px 0;border-radius:4px;transition:width 0.3s}
+    .tab-container{margin-top:16px}
+    .tab-buttons{display:flex;border-bottom:1px solid #e6eef8;margin-bottom:16px}
+    .tab-button{padding:8px 16px;background:none;border:none;cursor:pointer;border-bottom:2px solid transparent}
+    .tab-button.active{border-bottom-color:var(--accent);color:var(--accent);font-weight:600}
+    .tab-content{display:none}
+    .tab-content.active{display:block}
+    .share-link-container{margin:16px 0;padding:12px;background:var(--soft);border-radius:8px}
+    .share-link-input{width:100%;padding:8px;border:1px solid #e6eef8;border-radius:6px;margin:8px 0;font-family:monospace}
+    .share-options{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
+    .share-note{font-size:12px;color:var(--muted);margin-top:8px}
+    @media (max-width:900px){.wrap{flex-direction:column}.preview{order:2}.builder{order:1}}
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Questionnaire Builder</h1>
+    <div class="controls">
+      <div class="pill" id="status">Unsaved</div>
+      <button class="btn" id="loadSample">Load sample</button>
+      <button class="btn primary" id="exportJson">Export JSON</button>
+      <button class="btn success" id="exportExcel">Export Excel</button>
+      <button class="btn" id="downloadJson">Download JSON</button>
+      <button class="btn" id="showStats">Show Statistics</button>
+      <button class="btn" id="shareQuestionnaire">Share</button>
+    </div>
+  </header>
+
+  <div class="wrap">
+    <div class="panel builder">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+        <div>
+          <input id="formTitle" placeholder="Untitled Questionnaire" style="font-size:16px;padding:8px;border:0;background:transparent;width:360px" />
+          <div class="small" style="margin-top:4px">Design your questionnaire: add questions, set types and validation.</div>
+        </div>
+        <div class="file-actions">
+          <input type="file" id="importFile" style="display:none" />
+          <input type="file" id="importResponses" style="display:none" accept=".json,.csv" />
+          <button class="btn" id="importBtn">Import JSON</button>
+          <button class="btn" id="importResponsesBtn">Import Responses</button>
+          <button class="btn ghost" id="saveLocal">Save</button>
+          <button class="btn danger" id="clearAll">Clear</button>
+        </div>
+      </div>
+
+      <div class="toolbox" aria-hidden="false">
+        <button class="btn" data-type="short" onclick="addQuestion('short')">Short answer</button>
+        <button class="btn" data-type="paragraph" onclick="addQuestion('paragraph')">Paragraph</button>
+        <button class="btn" data-type="radio" onclick="addQuestion('radio')">Multiple choice</button>
+        <button class="btn" data-type="checkboxes" onclick="addQuestion('checkboxes')">Checkboxes</button>
+        <button class="btn" data-type="dropdown" onclick="addQuestion('dropdown')">Dropdown</button>
+        <button class="btn" data-type="scale" onclick="addQuestion('scale')">Linear scale</button>
+        <button class="btn" data-type="date" onclick="addQuestion('date')">Date</button>
+        <button class="btn" data-type="time" onclick="addQuestion('time')">Time</button>
+      </div>
+
+      <div id="questionsList"></div>
+
+      <div class="help">Tip: click a question title to edit, use add-option for choices. Use Export to download JSON definition for later analysis.</div>
+    </div>
+
+    <div class="panel preview">
+      <div class="preview-inner">
+        <h2 class="form-title" id="previewTitle">Untitled Questionnaire</h2>
+        <div class="form-desc" contenteditable="true" id="formDesc" placeholder="Description (click to edit)">Describe your questionnaire — purpose, instructions, or consent information.</div>
+        <div id="previewQuestions"></div>
+        <div style="margin-top:12px">
+          <button class="btn primary" id="simulateSubmit">Submit (simulate)</button>
+          <button class="btn" id="clearResponses">Clear Responses</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <div class="muted">Built for researchers — lightweight, exportable, and editable.</div>
+    <div class="tools-row">
+      <div class="inline">
+        <span class="small muted">Version</span>
+        <div class="pill">v1.2</div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Statistics Modal -->
+  <div class="modal" id="statsModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 class="modal-title">Questionnaire Statistics</h2>
+        <button class="close-modal" id="closeStats">&times;</button>
+      </div>
+      <div class="tab-container">
+        <div class="tab-buttons">
+          <button class="tab-button active" data-tab="summary">Summary</button>
+          <button class="tab-button" data-tab="responses">Response Data</button>
+        </div>
+        <div id="statsContent"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Share Modal -->
+  <div class="modal" id="shareModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 class="modal-title">Share Questionnaire</h2>
+        <button class="close-modal" id="closeShare">&times;</button>
+      </div>
+      <div>
+        <p>Share this link with others to let them fill out your questionnaire:</p>
+        
+        <div class="share-link-container">
+          <label for="shareLinkInput">Shareable Link:</label>
+          <input type="text" id="shareLinkInput" class="share-link-input" readonly />
+          <div class="share-options">
+            <button class="btn primary" id="copyShareLink">Copy Link</button>
+            <button class="btn" id="testShareLink">Test Link</button>
+            <button class="btn success" id="createQRCode">QR Code</button>
+          </div>
+          <div class="share-note">
+            This link contains your entire questionnaire and can be shared with participants.
+            Anyone with the link can fill out the form.
+          </div>
+        </div>
+
+        <div id="qrCodeContainer" style="display:none; text-align:center; margin-top:16px;">
+          <h3>QR Code</h3>
+          <canvas id="qrCodeCanvas"></canvas>
+          <div class="share-options">
+            <button class="btn" id="downloadQRCode">Download QR Code</button>
+          </div>
+        </div>
+
+        <div style="margin-top:20px; padding:12px; background:#f8fafc; border-radius:6px;">
+          <h4>Sharing Options</h4>
+          <div class="share-options">
+            <button class="btn" onclick="shareViaEmail()">Share via Email</button>
+            <button class="btn" onclick="shareViaWhatsApp()">Share via WhatsApp</button>
+            <button class="btn" id="embedCodeBtn">Embed Code</button>
+          </div>
+        </div>
+
+        <div id="embedCodeContainer" style="display:none; margin-top:16px;">
+          <h4>Embed Code</h4>
+          <p>Add this questionnaire to your website:</p>
+          <textarea id="embedCode" class="input" rows="4" readonly style="font-family:monospace; font-size:12px;"></textarea>
+          <div class="share-options">
+            <button class="btn primary" id="copyEmbedCode">Copy Embed Code</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Simple in-memory model for questions
+    let form = {
+      title: 'Untitled Questionnaire',
+      description: '',
+      questions: []
+    };
+    
+    // Store responses for analysis
+    let responses = [];
+    
+    const statusEl = document.getElementById('status');
+
+    function uid(prefix='q'){ return prefix + '-' + Math.random().toString(36).slice(2,9); }
+
+    // default option helper
+    function defaultOptionsFor(type){
+      if(type==='radio' || type==='checkboxes' || type==='dropdown'){
+        return ['Option 1','Option 2','Option 3'];
+      }
+      if(type==='scale'){
+        return ['1','5']; // min,max
+      }
+      return [];
+    }
+
+    function addQuestion(type='short'){
+      const q = {
+        id: uid(),
+        type,
+        title: typeLabel(type),
+        required: false,
+        options: defaultOptionsFor(type),
+        placeholder: (type==='short') ? 'Short answer' : '',
+      };
+      form.questions.push(q);
+      renderBuilder();
+      renderPreview();
+      markUnsaved();
+      scrollToQuestion(q.id);
+    }
+
+    function typeLabel(type){
+      const map = {
+        short:'Short answer',
+        paragraph:'Long answer',
+        radio:'Multiple choice',
+        checkboxes:'Checkboxes',
+        dropdown:'Dropdown',
+        scale:'Linear scale',
+        date:'Date',
+        time:'Time'
+      };
+      return map[type]||type;
+    }
+
+    function renderBuilder(){
+      const container = document.getElementById('questionsList');
+      container.innerHTML = '';
+      form.questions.forEach((q, idx) => {
+        const div = document.createElement('div');
+        div.className = 'question';
+        div.id = 'builder-'+q.id;
+        div.innerHTML = `
+          <div class="q-header">
+            <div class="q-title">
+              <input value="${escapeHtml(q.title)}" data-id="${q.id}" class="q-title-input"/>
+              <div class="small">${q.type} • Question ${idx+1}</div>
+            </div>
+            <div class="q-meta">
+              <div class="required-toggle">
+                <label class="small"><input type="checkbox" data-req="${q.id}" ${q.required?'checked':''}/> Required</label>
+              </div>
+              <div class="reorder">
+                <button class="btn" data-up="${q.id}">↑</button>
+                <button class="btn" data-down="${q.id}">↓</button>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:6px;margin-left:10px">
+                <button class="btn" data-dup="${q.id}">Duplicate</button>
+                <button class="btn danger" data-del="${q.id}">Delete</button>
+              </div>
+            </div>
+          </div>
+          <div class="options" id="opts-${q.id}"></div>
+        `;
+        container.appendChild(div);
+
+        // Render options area based on type
+        const opts = document.getElementById('opts-'+q.id);
+        if(['radio','checkboxes','dropdown'].includes(q.type)){
+          q.options.forEach((opt, i) => {
+            const odiv = document.createElement('div');
+            odiv.className = 'option';
+            odiv.innerHTML = `<input type="text" data-opt="${q.id}" data-idx="${i}" value="${escapeHtml(opt)}"/>
+                              <button class="btn" data-optdel="${q.id}" data-idx="${i}">Remove</button>`;
+            opts.appendChild(odiv);
+          });
+          const addBtn = document.createElement('button');
+          addBtn.className = 'btn';
+          addBtn.textContent = 'Add option';
+          addBtn.onclick = ()=>{ q.options.push('New option'); renderBuilder(); renderPreview(); markUnsaved(); };
+          opts.appendChild(addBtn);
+        } else if(q.type==='scale'){
+          opts.innerHTML = `
+            <div style="display:flex;gap:8px;align-items:center">
+              <label class="small">Min<input type="number" data-scale-min="${q.id}" value="${q.options[0]||1}" style="width:80px"/></label>
+              <label class="small">Max<input type="number" data-scale-max="${q.id}" value="${q.options[1]||5}" style="width:80px"/></label>
+            </div>
+          `;
+        } else if(q.type==='short' || q.type==='paragraph'){
+          opts.innerHTML = `<div class="small">Placeholder:<input type="text" data-placeholder="${q.id}" value="${escapeHtml(q.placeholder||'')}" style="margin-left:8px"/></div>`;
+        } else {
+          opts.innerHTML = `<div class="small">No additional options for this type.</div>`;
+        }
+      });
+
+      // Wire up event delegation for builder actions
+      container.querySelectorAll('.q-title-input').forEach(inp=>{
+        inp.oninput = (e)=>{ const id=e.target.dataset.id; const q=findById(id); q.title=e.target.value; renderPreview(); markUnsaved(); }
+      });
+      container.querySelectorAll('input[data-req]').forEach(cb=>{
+        cb.onchange = (e)=>{ const q=findById(e.target.dataset.req); q.required = e.target.checked; renderPreview(); markUnsaved(); }
+      });
+      container.querySelectorAll('button[data-up]').forEach(btn=>{
+        btn.onclick = ()=>{ moveQuestion(btn.dataset.up, -1); markUnsaved(); }
+      });
+      container.querySelectorAll('button[data-down]').forEach(btn=>{
+        btn.onclick = ()=>{ moveQuestion(btn.dataset.down, 1); markUnsaved(); }
+      });
+      container.querySelectorAll('button[data-del]').forEach(btn=>{
+        btn.onclick = ()=>{ deleteQuestion(btn.dataset.del); markUnsaved(); }
+      });
+      container.querySelectorAll('button[data-dup]').forEach(btn=>{
+        btn.onclick = ()=>{ duplicateQuestion(btn.dataset.dup); markUnsaved(); }
+      });
+      container.querySelectorAll('input[data-opt]').forEach(inp=>{
+        inp.oninput = (e)=>{ const id=e.target.dataset.opt; const idx=+e.target.dataset.idx; const q=findById(id); q.options[idx]=e.target.value; renderPreview(); markUnsaved(); }
+      });
+      container.querySelectorAll('button[data-optdel]').forEach(btn=>{
+        btn.onclick = (e)=>{ const id=btn.dataset.optdel; const idx=+btn.dataset.idx; const q=findById(id); q.options.splice(idx,1); renderBuilder(); renderPreview(); markUnsaved(); }
+      });
+      container.querySelectorAll('input[data-scale-min]').forEach(inp=>{
+        inp.oninput = (e)=>{ const q=findById(e.target.dataset.scaleMin); q.options[0]=e.target.value; renderPreview(); markUnsaved(); }
+      });
+      container.querySelectorAll('input[data-scale-max]').forEach(inp=>{
+        inp.oninput = (e)=>{ const q=findById(e.target.dataset.scaleMax); q.options[1]=e.target.value; renderPreview(); markUnsaved(); }
+      });
+      container.querySelectorAll('input[data-placeholder]').forEach(inp=>{
+        inp.oninput = (e)=>{ const q=findById(e.target.dataset.placeholder); q.placeholder=e.target.value; renderPreview(); markUnsaved(); }
+      });
+
+      // Also wire for cases where dataset names are normalized in html; attach generically:
+      container.querySelectorAll('[data-scale-min]').forEach(inp=>{
+        inp.oninput = (e)=>{ const id=e.target.getAttribute('data-scale-min'); const q=findById(id); q.options[0]=e.target.value; renderPreview(); markUnsaved(); }
+      });
+      container.querySelectorAll('[data-scale-max]').forEach(inp=>{
+        inp.oninput = (e)=>{ const id=e.target.getAttribute('data-scale-max'); const q=findById(id); q.options[1]=e.target.value; renderPreview(); markUnsaved(); }
+      });
+    }
+
+    function renderPreview(){
+      document.getElementById('previewTitle').textContent = form.title || 'Untitled Questionnaire';
+      document.getElementById('formTitle').value = form.title || '';
+      const descEl = document.getElementById('formDesc');
+      descEl.textContent = form.description || 'Describe your questionnaire — purpose, instructions, or consent information.';
+      // allow editing description
+      descEl.oninput = ()=>{ form.description = descEl.textContent; markUnsaved(); };
+
+      const p = document.getElementById('previewQuestions');
+      p.innerHTML = '';
+      form.questions.forEach((q, idx)=>{
+        const qdiv = document.createElement('div');
+        qdiv.className = 'form-q';
+        let requiredMark = q.required ? ' *' : '';
+        let html = `<div style="display:flex;justify-content:space-between;align-items:center">
+                      <div style="font-weight:600">${escapeHtml(q.title)}${requiredMark}</div>
+                      <div class="small">${q.type}</div>
+                    </div>`;
+        // render input by type
+        if(q.type==='short'){
+          html += `<input class="input" placeholder="${escapeAttr(q.placeholder||'')}" />`;
+        } else if(q.type==='paragraph'){
+          html += `<textarea class="input" placeholder="${escapeAttr(q.placeholder||'')}"></textarea>`;
+        } else if(q.type==='radio'){
+          html += '<div style="margin-top:8px">';
+          q.options.forEach(opt=>{ html += `<label class="small" style="display:block;margin-bottom:6px"><input name="${q.id}" type="radio"/> ${escapeHtml(opt)}</label>`; });
+          html += '</div>';
+        } else if(q.type==='checkboxes'){
+          html += '<div style="margin-top:8px">';
+          q.options.forEach(opt=>{ html += `<label class="small" style="display:block;margin-bottom:6px"><input type="checkbox"/> ${escapeHtml(opt)}</label>`; });
+          html += '</div>';
+        } else if(q.type==='dropdown'){
+          html += '<select class="select"><option value="">Select</option>';
+          q.options.forEach(opt=>{ html += `<option>${escapeHtml(opt)}</option>`; });
+          html += '</select>';
+        } else if(q.type==='scale'){
+          const min = q.options[0]||1; const max=q.options[1]||5;
+          html += `<div class="small">Scale ${min} — ${max}</div><div style="display:flex;gap:8px;margin-top:6px">`;
+          for(let i=+min;i<=+max;i++){ html += `<label><input type="radio" name="${q.id}" /> ${i}</label>`; }
+          html += '</div>';
+        } else if(q.type==='date'){
+          html += `<input type="date" class="input"/>`;
+        } else if(q.type==='time'){
+          html += `<input type="time" class="input"/>`;
+        } else {
+          html += `<div class="small">Unsupported type</div>`;
+        }
+        qdiv.innerHTML = html;
+        p.appendChild(qdiv);
+      });
+    }
+
+    function findById(id){ return form.questions.find(q=>q.id===id); }
+
+    function moveQuestion(id, delta){
+      const i = form.questions.findIndex(q=>q.id===id);
+      if(i===-1) return;
+      const j = i+delta;
+      if(j<0 || j>=form.questions.length) return;
+      const [item] = form.questions.splice(i,1);
+      form.questions.splice(j,0,item);
+      renderBuilder(); renderPreview();
+    }
+
+    function deleteQuestion(id){
+      form.questions = form.questions.filter(q=>q.id!==id);
+      renderBuilder(); renderPreview();
+    }
+
+    function duplicateQuestion(id){
+      const q = findById(id);
+      if(!q) return;
+      const copy = JSON.parse(JSON.stringify(q));
+      copy.id = uid();
+      copy.title += ' (copy)';
+      form.questions.push(copy);
+      renderBuilder(); renderPreview();
+    }
+
+    function scrollToQuestion(id){
+      const el = document.getElementById('builder-'+id);
+      if(el) el.scrollIntoView({behavior:'smooth',block:'center'});
+    }
+
+    // Utilities
+    function escapeHtml(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+    function escapeAttr(s){ return String(s||'').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
+
+    // Persistence
+    function markUnsaved(){ statusEl.textContent = 'Unsaved'; statusEl.style.background=''; statusEl.style.color=''; }
+    function markSaved(){ statusEl.textContent = 'Saved (local)'; statusEl.style.background='var(--soft)'; statusEl.style.color='var(--accent)'; }
+
+    document.getElementById('saveLocal').onclick = ()=>{
+      localStorage.setItem('researcherForm', JSON.stringify(form));
+      localStorage.setItem('researcherFormResponses', JSON.stringify(responses));
+      markSaved();
+    };
+
+    // Load from localStorage on init
+    function loadFromLocal(){
+      const raw = localStorage.getItem('researcherForm');
+      if(!raw) return false;
+      try{
+        form = JSON.parse(raw);
+      }catch(e){ console.warn('invalid local data'); return false; }
+      
+      const rawResponses = localStorage.getItem('researcherFormResponses');
+      if(rawResponses) {
+        try {
+          responses = JSON.parse(rawResponses);
+        } catch(e) { console.warn('invalid responses data'); }
+      }
+      
+      renderBuilder(); renderPreview(); markSaved();
+      return true;
+    }
+
+    // Export JSON
+    document.getElementById('exportJson').onclick = ()=>{
+      const out = JSON.stringify(form, null, 2);
+      // show in new window for copy
+      const win = window.open('', '_blank');
+      win.document.body.style.whiteSpace='pre';
+      win.document.title = 'Form JSON';
+      win.document.body.textContent = out;
+    };
+
+    // Download JSON file
+    document.getElementById('downloadJson').onclick = ()=>{
+      const blob = new Blob([JSON.stringify(form, null, 2)], {type:'application/json'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = (form.title||'questionnaire').replace(/\s+/g,'_') + '.json';
+      document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+    };
+
+    // Import
+    document.getElementById('importBtn').onclick = ()=> document.getElementById('importFile').click();
+    document.getElementById('importFile').onchange = async (e)=>{
+      const f = e.target.files[0];
+      if(!f) return;
+      try{
+        const text = await f.text();
+        const obj = JSON.parse(text);
+        if(obj && obj.questions){
+          form = obj;
+          renderBuilder(); renderPreview(); markUnsaved();
+        } else {
+          alert('Invalid form JSON.');
+        }
+      }catch(err){ alert('Error reading file: '+err.message); }
+      e.target.value = '';
+    };
+
+    // Clear all
+    document.getElementById('clearAll').onclick = ()=>{
+      if(!confirm('Clear all questions? This cannot be undone.')) return;
+      form = {title:'Untitled Questionnaire', description:'', questions:[]};
+      renderBuilder(); renderPreview(); markUnsaved();
+    };
+
+    // Load sample
+    document.getElementById('loadSample').onclick = ()=>{
+      form = {
+        title: 'Participant Survey',
+        description: 'A short sample questionnaire for research participants.',
+        questions: [
+          {id:uid(), type:'short', title:'Participant ID', required:true, placeholder:'e.g., P123'},
+          {id:uid(), type:'radio', title:'Gender', required:true, options:['Female','Male','Prefer not to say']},
+          {id:uid(), type:'scale', title:'Satisfaction with service', required:true, options:['1','7']},
+          {id:uid(), type:'paragraph', title:'Comments', required:false, placeholder:'Any additional notes'}
+        ]
+      };
+      renderBuilder(); renderPreview(); markUnsaved();
+    };
+
+    // Simulate submit (collect values from preview inputs)
+    document.getElementById('simulateSubmit').onclick = ()=>{
+      const preview = document.querySelector('.preview-inner');
+      // gather inputs from preview: map question titles to dummy values
+      const results = {timestamp: new Date().toISOString()};
+      // simple approach: iterate questions and find inputs/selects in order
+      const inputs = preview.querySelectorAll('.form-q');
+      inputs.forEach((el, i)=>{
+        const q = form.questions[i];
+        if(!q) return;
+        let val = null;
+        if(q.type==='short' || q.type==='paragraph' || q.type==='date' || q.type==='time'){
+          const inp = el.querySelector('input, textarea');
+          val = inp ? inp.value : '';
+        } else if(q.type==='radio' || q.type==='scale'){
+          const checked = el.querySelector('input[type="radio"]:checked');
+          val = checked ? checked.nextSibling?.textContent?.trim() || checked.value : null;
+        } else if(q.type==='checkboxes'){
+          const checked = Array.from(el.querySelectorAll('input[type="checkbox"]:checked')).map((c,i)=>{
+            return c.nextSibling?.textContent?.trim() || 'checked';
+          });
+          val = checked;
+        } else if(q.type==='dropdown'){
+          const sel = el.querySelector('select');
+          val = sel ? sel.value : null;
+        }
+        results[q.title] = val;
+      });
+      responses.push(results);
+      localStorage.setItem('researcherFormResponses', JSON.stringify(responses));
+      alert('Response recorded! Total responses: ' + responses.length);
+      console.log('Response recorded:', results);
+    };
+
+    document.getElementById('clearResponses').onclick = ()=>{ 
+      if(confirm('Clear all response data?')) {
+        responses = [];
+        localStorage.removeItem('researcherFormResponses');
+        alert('All response data cleared.');
+      }
+    };
+
+    // Excel Export Functionality
+    document.getElementById('exportExcel').onclick = () => {
+      if(responses.length === 0) {
+        alert('No response data to export.');
+        return;
+      }
+      
+      // Create CSV content
+      let csvContent = '';
+      
+      // Add headers
+      const headers = ['Timestamp', ...form.questions.map(q => q.title)];
+      csvContent += headers.map(h => `"${h.replace(/"/g, '""')}"`).join(',') + '\n';
+      
+      // Add data rows
+      responses.forEach(response => {
+        const row = [
+          response.timestamp,
+          ...form.questions.map(q => {
+            let value = response[q.title];
+            if (Array.isArray(value)) {
+              value = value.join('; ');
+            }
+            return `"${String(value || '').replace(/"/g, '""')}"`;
+          })
+        ];
+        csvContent += row.join(',') + '\n';
+      });
+      
+      // Create and download file
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = (form.title || 'questionnaire').replace(/\s+/g, '_') + '_responses.csv';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    };
+
+    // Statistics Modal
+    document.getElementById('showStats').onclick = () => {
+      if(responses.length === 0) {
+        alert('No response data available for analysis.');
+        return;
+      }
+      
+      showStatistics();
+      document.getElementById('statsModal').style.display = 'flex';
+    };
+
+    document.getElementById('closeStats').onclick = () => {
+      document.getElementById('statsModal').style.display = 'none';
+    };
+
+    // Tab switching
+    document.querySelectorAll('.tab-button').forEach(button => {
+      button.addEventListener('click', () => {
+        const tab = button.getAttribute('data-tab');
+        
+        // Update active tab button
+        document.querySelectorAll('.tab-button').forEach(btn => {
+          btn.classList.remove('active');
+        });
+        button.classList.add('active');
+        
+        // Show corresponding tab content
+        document.querySelectorAll('.tab-content').forEach(content => {
+          content.classList.remove('active');
+        });
+        
+        if(tab === 'summary') {
+          showStatistics();
+        } else if(tab === 'responses') {
+          showResponseData();
+        }
+      });
+    });
+
+    function showStatistics() {
+      const content = document.getElementById('statsContent');
+      content.innerHTML = `
+        <div class="tab-content active" id="summaryTab">
+          <div class="stats-section">
+            <h3>Response Summary</h3>
+            <p>Total responses: <strong>${responses.length}</strong></p>
+          </div>
+          ${form.questions.map(q => generateQuestionStats(q)).join('')}
+        </div>
+      `;
+    }
+
+    function showResponseData() {
+      const content = document.getElementById('statsContent');
+      
+      let html = `<div class="tab-content active" id="responsesTab">
+        <div class="stats-section">
+          <h3>Response Data</h3>
+          <p>Showing all ${responses.length} responses:</p>
+          <div style="overflow-x:auto;">
+            <table class="stats-table">
+              <thead>
+                <tr>
+                  <th>Timestamp</th>
+                  ${form.questions.map(q => `<th>${q.title}</th>`).join('')}
+                </tr>
+              </thead>
+              <tbody>
+                ${responses.map(r => `
+                  <tr>
+                    <td>${new Date(r.timestamp).toLocaleString()}</td>
+                    ${form.questions.map(q => {
+                      let value = r[q.title];
+                      if (Array.isArray(value)) {
+                        value = value.join(', ');
+                      }
+                      return `<td>${value || ''}</td>`;
+                    }).join('')}
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>`;
+      
+      content.innerHTML = html;
+    }
+
+    function generateQuestionStats(question) {
+      const questionResponses = responses.map(r => r[question.title]);
+      
+      if(question.type === 'radio' || question.type === 'dropdown') {
+        return generateCategoricalStats(question, questionResponses);
+      } else if(question.type === 'checkboxes') {
+        return generateCheckboxStats(question, questionResponses);
+      } else if(question.type === 'scale') {
+        return generateScaleStats(question, questionResponses);
+      } else {
+        return generateTextStats(question, questionResponses);
+      }
+    }
+
+    function generateCategoricalStats(question, responses) {
+      const counts = {};
+      let total = 0;
+      
+      responses.forEach(response => {
+        if(response && response !== '') {
+          counts[response] = (counts[response] || 0) + 1;
+          total++;
+        }
+      });
+      
+      const options = question.options || [];
+      
+      let chartHtml = '';
+      Object.keys(counts).forEach(option => {
+        const percentage = total > 0 ? (counts[option] / total * 100).toFixed(1) : 0;
+        chartHtml += `
+          <div>
+            <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+              <span>${option}</span>
+              <span>${counts[option]} (${percentage}%)</span>
+            </div>
+            <div class="chart-bar" style="width:${percentage}%"></div>
+          </div>
+        `;
+      });
+      
+      return `
+        <div class="stats-section">
+          <h4>${question.title}</h4>
+          <div class="chart-container">
+            ${chartHtml || '<p>No responses for this question</p>'}
+          </div>
+          <table class="stats-table">
+            <thead>
+              <tr>
+                <th>Option</th>
+                <th>Count</th>
+                <th>Percentage</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${Object.keys(counts).map(option => `
+                <tr>
+                  <td>${option}</td>
+                  <td>${counts[option]}</td>
+                  <td>${total > 0 ? ((counts[option] / total * 100).toFixed(1) + '%') : '0%'}</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </div>
+      `;
+    }
+
+    function generateCheckboxStats(question, responses) {
+      const counts = {};
+      let total = 0;
+      
+      responses.forEach(response => {
+        if(Array.isArray(response)) {
+          response.forEach(option => {
+            counts[option] = (counts[option] || 0) + 1;
+          });
+          total++;
+        }
+      });
+      
+      const options = question.options || [];
+      
+      let chartHtml = '';
+      Object.keys(counts).forEach(option => {
+        const percentage = total > 0 ? (counts[option] / total * 100).toFixed(1) : 0;
+        chartHtml += `
+          <div>
+            <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+              <span>${option}</span>
+              <span>${counts[option]} (${percentage}%)</span>
+            </div>
+            <div class="chart-bar" style="width:${percentage}%"></div>
+          </div>
+        `;
+      });
+      
+      return `
+        <div class="stats-section">
+          <h4>${question.title}</h4>
+          <p>Total respondents: ${total}</p>
+          <div class="chart-container">
+            ${chartHtml || '<p>No responses for this question</p>'}
+          </div>
+          <table class="stats-table">
+            <thead>
+              <tr>
+                <th>Option</th>
+                <th>Count</th>
+                <th>Percentage</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${Object.keys(counts).map(option => `
+                <tr>
+                  <td>${option}</td>
+                  <td>${counts[option]}</td>
+                  <td>${total > 0 ? ((counts[option] / total * 100).toFixed(1) + '%') : '0%'}</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </div>
+      `;
+    }
+
+    function generateScaleStats(question, responses) {
+      const numericResponses = responses
+        .map(r => parseInt(r))
+        .filter(r => !isNaN(r));
+      
+      if(numericResponses.length === 0) {
+        return `
+          <div class="stats-section">
+            <h4>${question.title}</h4>
+            <p>No numeric responses available for analysis.</p>
+          </div>
+        `;
+      }
+      
+      const min = Math.min(...numericResponses);
+      const max = Math.max(...numericResponses);
+      const avg = numericResponses.reduce((a, b) => a + b, 0) / numericResponses.length;
+      
+      // Count frequencies
+      const counts = {};
+      numericResponses.forEach(r => {
+        counts[r] = (counts[r] || 0) + 1;
+      });
+      
+      let chartHtml = '';
+      Object.keys(counts).sort((a, b) => a - b).forEach(value => {
+        const percentage = (counts[value] / numericResponses.length * 100).toFixed(1);
+        chartHtml += `
+          <div>
+            <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+              <span>${value}</span>
+              <span>${counts[value]} (${percentage}%)</span>
+            </div>
+            <div class="chart-bar" style="width:${percentage}%"></div>
+          </div>
+        `;
+      });
+      
+      return `
+        <div class="stats-section">
+          <h4>${question.title}</h4>
+          <p>Responses: ${numericResponses.length} | Average: ${avg.toFixed(2)} | Min: ${min} | Max: ${max}</p>
+          <div class="chart-container">
+            ${chartHtml}
+          </div>
+          <table class="stats-table">
+            <thead>
+              <tr>
+                <th>Value</th>
+                <th>Count</th>
+                <th>Percentage</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${Object.keys(counts).sort((a, b) => a - b).map(value => `
+                <tr>
+                  <td>${value}</td>
+                  <td>${counts[value]}</td>
+                  <td>${(counts[value] / numericResponses.length * 100).toFixed(1)}%</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </div>
+      `;
+    }
+
+    function generateTextStats(question, responses) {
+      const validResponses = responses.filter(r => r && r !== '');
+      const wordCounts = validResponses.map(r => r.split(/\s+/).length);
+      const avgWords = wordCounts.length > 0 ? 
+        (wordCounts.reduce((a, b) => a + b, 0) / wordCounts.length).toFixed(1) : 0;
+      
+      return `
+        <div class="stats-section">
+          <h4>${question.title}</h4>
+          <p>Responses: ${validResponses.length} | Average word count: ${avgWords}</p>
+          <table class="stats-table">
+            <thead>
+              <tr>
+                <th>Response</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${validResponses.map(response => `
+                <tr>
+                  <td>${response}</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </div>
+      `;
+    }
+
+    // Import responses
+    document.getElementById('importResponsesBtn').onclick = () => document.getElementById('importResponses').click();
+    document.getElementById('importResponses').onchange = async (e) => {
+      const f = e.target.files[0];
+      if(!f) return;
+      
+      try {
+        const text = await f.text();
+        let importedResponses;
+        
+        if(f.name.endsWith('.json')) {
+          importedResponses = JSON.parse(text);
+        } else if(f.name.endsWith('.csv')) {
+          importedResponses = parseCSV(text);
+        } else {
+          alert('Unsupported file format. Please use JSON or CSV.');
+          return;
+        }
+        
+        if(Array.isArray(importedResponses)) {
+          responses = responses.concat(importedResponses);
+          localStorage.setItem('researcherFormResponses', JSON.stringify(responses));
+          alert(`Successfully imported ${importedResponses.length} responses. Total responses: ${responses.length}`);
+        } else {
+          alert('Invalid response data format.');
+        }
+      } catch(err) {
+        alert('Error reading file: ' + err.message);
+      }
+      e.target.value = '';
+    };
+
+    function parseCSV(csvText) {
+      const lines = csvText.split('\n');
+      if(lines.length < 2) return [];
+      
+      const headers = lines[0].split(',').map(h => h.replace(/^"|"$/g, ''));
+      const responses = [];
+      
+      for(let i = 1; i < lines.length; i++) {
+        if(!lines[i].trim()) continue;
+        
+        const values = parseCSVLine(lines[i]);
+        if(values.length !== headers.length) continue;
+        
+        const response = {};
+        headers.forEach((header, index) => {
+          let value = values[index].replace(/^"|"$/g, '');
+          
+          // Try to parse arrays (for checkboxes)
+          if(value.includes(';')) {
+            value = value.split(';').map(v => v.trim()).filter(v => v);
+          }
+          
+          response[header] = value;
+        });
+        
+        responses.push(response);
+      }
+      
+      return responses;
+    }
+
+    function parseCSVLine(line) {
+      const result = [];
+      let current = '';
+      let inQuotes = false;
+      
+      for(let i = 0; i < line.length; i++) {
+        const char = line[i];
+        
+        if(char === '"') {
+          inQuotes = !inQuotes;
+        } else if(char === ',' && !inQuotes) {
+          result.push(current);
+          current = '';
+        } else {
+          current += char;
+        }
+      }
+      
+      result.push(current);
+      return result;
+    }
+
+    // SHARING FUNCTIONALITY
+    document.getElementById('shareQuestionnaire').onclick = () => {
+      generateShareLink();
+      document.getElementById('shareModal').style.display = 'flex';
+    };
+
+    document.getElementById('closeShare').onclick = () => {
+      document.getElementById('shareModal').style.display = 'none';
+      document.getElementById('qrCodeContainer').style.display = 'none';
+      document.getElementById('embedCodeContainer').style.display = 'none';
+    };
+
+    function generateShareLink() {
+      // Create a compressed version of the form data for the URL
+      const formData = {
+        title: form.title,
+        description: form.description,
+        questions: form.questions
+      };
+      
+      // Convert to base64 for URL sharing
+      const jsonString = JSON.stringify(formData);
+      const base64String = btoa(unescape(encodeURIComponent(jsonString)));
+      
+      // Create the shareable URL
+      const currentUrl = window.location.href.split('?')[0];
+      const shareUrl = `${currentUrl}?form=${base64String}`;
+      
+      document.getElementById('shareLinkInput').value = shareUrl;
+      
+      // Generate embed code
+      const embedCode = `<iframe src="${shareUrl}" width="100%" height="600px" frameborder="0" style="border:1px solid #e6eef8; border-radius:8px;"></iframe>`;
+      document.getElementById('embedCode').value = embedCode;
+    }
+
+    document.getElementById('copyShareLink').onclick = () => {
+      const shareInput = document.getElementById('shareLinkInput');
+      shareInput.select();
+      document.execCommand('copy');
+      alert('Link copied to clipboard!');
+    };
+
+    document.getElementById('testShareLink').onclick = () => {
+      const shareUrl = document.getElementById('shareLinkInput').value;
+      window.open(shareUrl, '_blank');
+    };
+
+    document.getElementById('createQRCode').onclick = () => {
+      const shareUrl = document.getElementById('shareLinkInput').value;
+      generateQRCode(shareUrl);
+      document.getElementById('qrCodeContainer').style.display = 'block';
+    };
+
+    document.getElementById('downloadQRCode').onclick = () => {
+      const canvas = document.getElementById('qrCodeCanvas');
+      const link = document.createElement('a');
+      link.download = `${form.title || 'questionnaire'}_qrcode.png`;
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+    };
+
+    document.getElementById('embedCodeBtn').onclick = () => {
+      document.getElementById('embedCodeContainer').style.display = 'block';
+    };
+
+    document.getElementById('copyEmbedCode').onclick = () => {
+      const embedInput = document.getElementById('embedCode');
+      embedInput.select();
+      document.execCommand('copy');
+      alert('Embed code copied to clipboard!');
+    };
+
+    function generateQRCode(text) {
+      const canvas = document.getElementById('qrCodeCanvas');
+      const ctx = canvas.getContext('2d');
+      
+      // Set canvas size
+      canvas.width = 200;
+      canvas.height = 200;
+      
+      // Clear canvas
+      ctx.fillStyle = 'white';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      
+      // Simple QR code generation (basic implementation)
+      // In a real application, you might want to use a proper QR code library
+      const qrSize = 10; // size of each QR code module
+      const margin = 20;
+      
+      // This is a very simplified representation
+      // A real QR code would require proper encoding and error correction
+      ctx.fillStyle = 'black';
+      
+      // Draw a simple pattern (this is not a real QR code, just a visual representation)
+      for (let i = 0; i < 5; i++) {
+        for (let j = 0; j < 5; j++) {
+          if ((i + j) % 2 === 0 || i === 0 || j === 0 || i === 4 || j === 4) {
+            ctx.fillRect(margin + i * qrSize, margin + j * qrSize, qrSize, qrSize);
+          }
+        }
+      }
+      
+      // Add text below
+      ctx.fillStyle = 'black';
+      ctx.font = '12px Arial';
+      ctx.textAlign = 'center';
+      ctx.fillText('Scan to open questionnaire', canvas.width / 2, canvas.height - 5);
+    }
+
+    function shareViaEmail() {
+      const shareUrl = document.getElementById('shareLinkInput').value;
+      const subject = encodeURIComponent(`Questionnaire: ${form.title}`);
+      const body = encodeURIComponent(`Please complete this questionnaire: ${shareUrl}`);
+      window.open(`mailto:?subject=${subject}&body=${body}`);
+    }
+
+    function shareViaWhatsApp() {
+      const shareUrl = document.getElementById('shareLinkInput').value;
+      const text = encodeURIComponent(`Please complete this questionnaire: ${shareUrl}`);
+      window.open(`https://wa.me/?text=${text}`);
+    }
+
+    // Load form from URL parameter on page load
+    function loadFormFromURL() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const formParam = urlParams.get('form');
+      
+      if (formParam) {
+        try {
+          // Decode the base64 form data
+          const jsonString = decodeURIComponent(escape(atob(formParam)));
+          const formData = JSON.parse(jsonString);
+          
+          if (formData && formData.questions) {
+            form = formData;
+            renderBuilder();
+            renderPreview();
+            markUnsaved();
+            
+            // Update page title to reflect the loaded form
+            document.title = `${form.title} - Questionnaire Builder`;
+            
+            // Show a message that the form was loaded from a shared link
+            setTimeout(() => {
+              alert('Questionnaire loaded from shared link. You can now fill it out or make changes.');
+            }, 500);
+          }
+        } catch (e) {
+          console.error('Error loading form from URL:', e);
+        }
+      }
+    }
+
+    // Title binding
+    document.getElementById('formTitle').oninput = (e)=>{ form.title = e.target.value; renderPreview(); markUnsaved(); };
+
+    // Initialization
+    (function init(){
+      // First try to load from URL (shared form)
+      loadFormFromURL();
+      
+      // If no form in URL, try loading from localStorage
+      if (form.questions.length === 0 && !loadFromLocal()){
+        // initial sample question
+        form.questions = [
+          {id:uid(), type:'short', title:'Your name', required:true, placeholder:'Full name'},
+          {id:uid(), type:'radio', title:'Have you used our service before?', required:true, options:['Yes','No']},
+        ];
+      }
+      renderBuilder(); renderPreview();
+      markSaved();
+    })();
+  </script>
+</body>
+</html>
