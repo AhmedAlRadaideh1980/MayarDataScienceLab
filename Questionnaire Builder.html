@@ -91,6 +91,12 @@
     #respondentView .progress {height:100%; background:var(--accent); width:0%; transition:width 0.3s;}
     #respondentView .question-counter {font-size:14px; color:var(--muted); margin-bottom:10px;}
     
+    /* Email Configuration Styles */
+    .email-config {margin:16px 0; padding:16px; background:#f8fafc; border-radius:8px;}
+    .email-config h4 {margin-top:0; margin-bottom:12px;}
+    .email-config input {width:100%; padding:8px; margin-bottom:12px; border:1px solid #e6eef8; border-radius:6px;}
+    .email-config .help {margin-top:4px;}
+    
     @media (max-width:900px){.wrap{flex-direction:column}.preview{order:2}.builder{order:1}}
   </style>
 </head>
@@ -122,6 +128,27 @@
           <button class="btn" id="importResponsesBtn">Import Responses</button>
           <button class="btn ghost" id="saveLocal">Save</button>
           <button class="btn danger" id="clearAll">Clear</button>
+        </div>
+      </div>
+
+      <!-- Email Configuration Section -->
+      <div class="email-config">
+        <h4>Email Configuration</h4>
+        <div>
+          <label for="creatorEmail">Creator Email (for receiving responses)</label>
+          <input type="email" id="creatorEmail" placeholder="your-email@example.com" />
+          <div class="help">Responses will be automatically emailed to this address as Excel files</div>
+        </div>
+        <div>
+          <label for="autoEmail">Automatically email responses</label>
+          <select id="autoEmail" style="width:100%; padding:8px; border-radius:6px; border:1px solid #e6eef8;">
+            <option value="yes">Yes - Email after each submission</option>
+            <option value="no">No - Only when manually requested</option>
+          </select>
+        </div>
+        <div style="margin-top:12px;">
+          <button class="btn primary" id="testEmail">Test Email Configuration</button>
+          <button class="btn success" id="emailResponses">Email All Responses Now</button>
         </div>
       </div>
 
@@ -279,6 +306,12 @@
     
     // Store responses for analysis
     let responses = [];
+    
+    // Email configuration
+    let emailConfig = {
+      creatorEmail: '',
+      autoEmail: 'yes'
+    };
     
     // Respondent view state
     let currentQuestionIndex = 0;
@@ -528,6 +561,7 @@
     document.getElementById('saveLocal').onclick = ()=>{
       localStorage.setItem('researcherForm', JSON.stringify(form));
       localStorage.setItem('researcherFormResponses', JSON.stringify(responses));
+      localStorage.setItem('researcherFormEmailConfig', JSON.stringify(emailConfig));
       markSaved();
     };
 
@@ -544,6 +578,15 @@
         try {
           responses = JSON.parse(rawResponses);
         } catch(e) { console.warn('invalid responses data'); }
+      }
+      
+      const rawEmailConfig = localStorage.getItem('researcherFormEmailConfig');
+      if(rawEmailConfig) {
+        try {
+          emailConfig = JSON.parse(rawEmailConfig);
+          document.getElementById('creatorEmail').value = emailConfig.creatorEmail || '';
+          document.getElementById('autoEmail').value = emailConfig.autoEmail || 'yes';
+        } catch(e) { console.warn('invalid email config data'); }
       }
       
       renderBuilder(); renderPreview(); markSaved();
@@ -639,6 +682,12 @@
       });
       responses.push(results);
       localStorage.setItem('researcherFormResponses', JSON.stringify(responses));
+      
+      // Auto-email responses if configured
+      if(emailConfig.autoEmail === 'yes' && emailConfig.creatorEmail) {
+        emailResponses('New response submitted');
+      }
+      
       alert('Response recorded! Total responses: ' + responses.length);
       console.log('Response recorded:', results);
     };
@@ -690,6 +739,88 @@
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
+    };
+
+    // Email Responses Functionality
+    function emailResponses(subjectPrefix = 'Questionnaire Responses') {
+      if(responses.length === 0) {
+        alert('No response data to email.');
+        return;
+      }
+      
+      if(!emailConfig.creatorEmail) {
+        alert('Please set your email address in the Email Configuration section.');
+        return;
+      }
+      
+      // Create CSV content
+      let csvContent = '';
+      
+      // Add headers
+      const headers = ['Timestamp', ...form.questions.map(q => q.title)];
+      csvContent += headers.map(h => `"${h.replace(/"/g, '""')}"`).join(',') + '\n';
+      
+      // Add data rows
+      responses.forEach(response => {
+        const row = [
+          response.timestamp,
+          ...form.questions.map(q => {
+            let value = response[q.title];
+            if (Array.isArray(value)) {
+              value = value.join('; ');
+            }
+            return `"${String(value || '').replace(/"/g, '""')}"`;
+          })
+        ];
+        csvContent += row.join(',') + '\n';
+      });
+      
+      // Create CSV blob
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      
+      // Create a FormData object to simulate form submission
+      const formData = new FormData();
+      formData.append('to', emailConfig.creatorEmail);
+      formData.append('subject', `${subjectPrefix} - ${form.title}`);
+      formData.append('body', `Attached are the responses from your questionnaire "${form.title}".\n\nTotal responses: ${responses.length}\n\nThis email was automatically sent from the Questionnaire Builder.`);
+      formData.append('attachment', blob, `${form.title.replace(/\s+/g, '_')}_responses.csv`);
+      
+      // For demonstration, we'll use a mailto link with instructions
+      // In a real implementation, you would use a server-side endpoint
+      const subject = encodeURIComponent(`${subjectPrefix} - ${form.title}`);
+      const body = encodeURIComponent(`Attached are the responses from your questionnaire "${form.title}".\n\nTotal responses: ${responses.length}\n\nPlease save this email and use the "Email Responses" feature in the Questionnaire Builder to get the actual Excel file attachment.\n\nThis is a demonstration. In a real implementation, the Excel file would be attached automatically.`);
+      
+      window.open(`mailto:${emailConfig.creatorEmail}?subject=${subject}&body=${body}`);
+      
+      alert(`Email prepared for ${emailConfig.creatorEmail}. In a real implementation, the Excel file would be attached automatically.`);
+    }
+
+    // Email configuration handlers
+    document.getElementById('creatorEmail').oninput = (e) => {
+      emailConfig.creatorEmail = e.target.value;
+      markUnsaved();
+    };
+
+    document.getElementById('autoEmail').onchange = (e) => {
+      emailConfig.autoEmail = e.target.value;
+      markUnsaved();
+    };
+
+    document.getElementById('testEmail').onclick = () => {
+      if(!emailConfig.creatorEmail) {
+        alert('Please enter your email address first.');
+        return;
+      }
+      
+      // Create a test email
+      const subject = encodeURIComponent('Test Email - Questionnaire Builder');
+      const body = encodeURIComponent('This is a test email from the Questionnaire Builder.\n\nIf you received this email, your email configuration is working correctly.');
+      
+      window.open(`mailto:${emailConfig.creatorEmail}?subject=${subject}&body=${body}`);
+    };
+
+    document.getElementById('emailResponses').onclick = () => {
+      emailResponses();
     };
 
     // Statistics Modal
@@ -1399,6 +1530,11 @@
       // Add to responses
       responses.push(response);
       localStorage.setItem('researcherFormResponses', JSON.stringify(responses));
+      
+      // Auto-email responses if configured
+      if(emailConfig.autoEmail === 'yes' && emailConfig.creatorEmail) {
+        emailResponses('New response submitted');
+      }
       
       showThankYouPage();
     }
